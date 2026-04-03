@@ -1,14 +1,1 @@
-[
-  {
-    "id": "1775203639519",
-    "date": "2026-04-03",
-    "pair": "NAS100",
-    "session": "New York",
-    "time_entry": "03:03 PM",
-    "result": "Loss",
-    "rr": 2.5,
-    "note": "",
-    "image_url": "https://raw.githubusercontent.com/LouisFriendis/my-backtest-data/main/images/img_20260403_1775203637809.png",
-    "timestamp": "2026-04-03T08:07:19.519Z"
-  }
-]
+[]
