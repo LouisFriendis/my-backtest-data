@@ -1,1204 +1,727 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>BackTest Tracker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg:       #0a0c0f;
-    --bg2:      #111418;
-    --bg3:      #181c23;
-    --border:   #23282f;
-    --border2:  #2d3440;
-    --green:    #00e5a0;
-    --green-dim:#00e5a030;
-    --red:      #ff4d6d;
-    --red-dim:  #ff4d6d25;
-    --amber:    #f7b731;
-    --amber-dim:#f7b73120;
-    --blue:     #3d9cf0;
-    --text:     #d4dae4;
-    --text-dim: #5a6475;
-    --text-mid: #8b95a6;
-    --mono:     'Space Mono', monospace;
-    --sans:     'DM Sans', sans-serif;
-  }
+:root {
+  --bg:         #07080d;
+  --bg2:        #0d0f18;
+  --bg3:        #121520;
+  --bg4:        #171b29;
+  --border:     #1e2235;
+  --border2:    #272d46;
+  --cyan:       #00d4ff;
+  --cyan-dim:   rgba(0,212,255,.1);
+  --cyan-glow:  rgba(0,212,255,.25);
+  --purple:     #a259ff;
+  --purple-dim: rgba(162,89,255,.12);
+  --purple-glow:rgba(162,89,255,.3);
+  --green:      #05f5a0;
+  --green-dim:  rgba(5,245,160,.1);
+  --red:        #ff4c6e;
+  --red-dim:    rgba(255,76,110,.12);
+  --gold:       #ffd166;
+  --gold-dim:   rgba(255,209,102,.1);
+  --text:       #c8d0e8;
+  --text-mid:   #6b7599;
+  --text-dim:   #3d4461;
+  --mono:       'JetBrains Mono', monospace;
+  --sans:       'Outfit', sans-serif;
+  --r:          12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--sans);min-height:100vh;font-size:14px;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% -10%,rgba(162,89,255,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%,rgba(0,212,255,.06) 0%,transparent 60%);
+}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:58px;
+  background:rgba(7,8,13,.85);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.1em;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.nav-logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  box-shadow:0 0 16px var(--purple-glow);
+}
+.nav-tabs{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px}
+.nav-tab{
+  padding:7px 20px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;
+  color:var(--text-mid);background:transparent;border:none;transition:all .2s;
+}
+.nav-tab:hover{color:var(--text);background:var(--bg4)}
+.nav-tab.active{color:#fff;background:linear-gradient(135deg,var(--purple),var(--cyan));box-shadow:0 2px 12px var(--purple-glow)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.cfg-badge{padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em}
+.cfg-badge.ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(5,245,160,.25)}
+.cfg-badge.bad{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,76,110,.25)}
+.btn-cfg{
+  display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;
+  font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;
+  color:var(--text);background:var(--bg3);border:1px solid var(--border2);transition:all .2s;
+}
+.btn-cfg:hover{border-color:var(--purple);color:#fff;box-shadow:0 0 12px var(--purple-glow)}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    font-size: 14px;
-  }
+/* PAGES */
+.page{display:none}
+.page.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wrap{max-width:1280px;margin:0 auto;padding:32px 28px}
+.page-header{margin-bottom:28px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-.01em;color:#fff;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text-mid)}
 
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+.scard{
+  border-radius:var(--r);padding:20px;border:1px solid var(--border);
+  background:var(--bg2);position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.scard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.025) 0%,transparent 60%);pointer-events:none}
+.scard:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.scard-accent{position:absolute;top:0;left:0;right:0;height:2px}
+.sa-multi {background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.sa-cyan  {background:linear-gradient(90deg,var(--cyan),transparent)}
+.sa-purple{background:linear-gradient(90deg,var(--purple),transparent)}
+.sa-green {background:linear-gradient(90deg,var(--green),transparent)}
+.sa-red   {background:linear-gradient(90deg,var(--red),transparent)}
+.sa-gold  {background:linear-gradient(90deg,var(--gold),transparent)}
+.scard-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mid);margin-bottom:12px}
+.scard-val{font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:-.02em;color:#fff;line-height:1;margin-bottom:6px}
+.sv-cyan  {color:var(--cyan)}
+.sv-purple{color:var(--purple)}
+.sv-green {color:var(--green)}
+.sv-red   {color:var(--red)}
+.sv-gold  {color:var(--gold)}
+.scard-sub{font-size:11px;color:var(--text-mid)}
 
-  /* ── Top Nav ── */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 28px;
-    height: 52px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(10px);
-  }
-  .nav-logo {
-    display: flex; align-items: center; gap: 10px;
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em; color: var(--green);
-  }
-  .nav-logo svg { width: 22px; height: 22px; }
-  .nav-tabs { display: flex; gap: 2px; }
-  .nav-tab {
-    padding: 6px 16px; border-radius: 6px;
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    color: var(--text-dim); background: transparent; border: none;
-    transition: all .15s;
-  }
-  .nav-tab:hover { color: var(--text); background: var(--bg3); }
-  .nav-tab.active { color: var(--green); background: var(--green-dim); }
-  .nav-right { display: flex; align-items: center; gap: 10px; }
-  .btn-settings {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 14px; border-radius: 7px;
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    color: var(--text-dim); background: var(--bg3);
-    border: 1px solid var(--border); transition: all .15s;
-  }
-  .btn-settings:hover { color: var(--text); border-color: var(--border2); }
+/* BANNER */
+.no-cfg-banner{
+  display:none;align-items:center;gap:14px;
+  padding:14px 20px;border-radius:var(--r);
+  background:var(--red-dim);border:1px solid rgba(255,76,110,.2);
+  margin-bottom:24px;font-size:13px;color:var(--red);
+}
+.no-cfg-banner button{
+  margin-left:auto;padding:7px 16px;border-radius:7px;
+  background:var(--red);color:#fff;border:none;
+  font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;
+}
 
-  /* ── Pages ── */
-  .page { display: none; }
-  .page.active { display: block; }
+/* TABLE */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:12px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-mid)}
+.filters{display:flex;gap:8px}
+.fsel{
+  padding:7px 14px;border-radius:8px;font-size:12px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--sans);outline:none;cursor:pointer;transition:border-color .15s;
+}
+.fsel:focus{border-color:var(--purple)}
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:13px 18px;text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-weight:400}
+td{padding:14px 18px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.empty-msg{padding:64px;text-align:center;color:var(--text-dim);font-family:var(--mono);font-size:12px;letter-spacing:.08em}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.badge-win{background:var(--green-dim);color:var(--green);border:1px solid rgba(5,245,160,.2)}
+.badge-win::before{background:var(--green)}
+.badge-loss{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,76,110,.2)}
+.badge-loss::before{background:var(--red)}
+.pair-chip{display:inline-block;padding:4px 10px;border-radius:6px;font-family:var(--mono);font-size:11px;font-weight:600;background:rgba(162,89,255,.12);color:var(--purple);border:1px solid rgba(162,89,255,.2)}
+.sess-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid)}
+.sess-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sd-asian{background:var(--gold)}.sd-london{background:var(--cyan)}.sd-ny{background:var(--green)}
+.rr-pos{font-family:var(--mono);color:var(--gold);font-size:13px}
+.rr-neg{font-family:var(--mono);color:var(--red);font-size:13px}
+.thumb-btn{width:48px;height:36px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;overflow:hidden;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.thumb-btn:hover{border-color:var(--cyan);box-shadow:0 0 10px var(--cyan-glow)}
+.thumb-btn img{width:100%;height:100%;object-fit:cover}
+.thumb-empty{font-size:14px;color:var(--text-dim)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:15px;padding:5px 9px;border-radius:6px;transition:all .15s}
+.del-btn:hover{color:var(--red);background:var(--red-dim)}
 
-  /* ── Layout ── */
-  .container { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+/* FORM */
+.form-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
+.fcard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden}
+.fcard::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.fcard-title{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mid);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.fg{margin-bottom:18px}
+.fg:last-child{margin-bottom:0}
+.flabel{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px}
+.finput{
+  width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:9px;color:var(--text);font-size:13px;font-family:var(--sans);
+  outline:none;transition:all .2s;appearance:none;-webkit-appearance:none;
+}
+.finput:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
+.finput::placeholder{color:var(--text-dim)}
+select.finput option{background:var(--bg3)}
+textarea.finput{resize:vertical;min-height:88px;line-height:1.65}
+.result-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.result-wrap input{display:none}
+.result-wrap label{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px;border-radius:9px;cursor:pointer;
+  font-size:13px;font-weight:600;letter-spacing:.04em;
+  border:1px solid var(--border2);background:var(--bg3);color:var(--text-mid);transition:all .2s;
+}
+.result-wrap input[value="Win"]:checked + label{border-color:var(--green);color:var(--green);background:var(--green-dim);box-shadow:0 0 14px rgba(5,245,160,.15)}
+.result-wrap input[value="Loss"]:checked + label{border-color:var(--red);color:var(--red);background:var(--red-dim);box-shadow:0 0 14px rgba(255,76,110,.15)}
 
-  /* ── Stats Bar ── */
-  .stats-bar {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 12px; margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 18px;
-    transition: border-color .2s;
-  }
-  .stat-card:hover { border-color: var(--border2); }
-  .stat-label {
-    font-size: 11px; font-family: var(--mono);
-    letter-spacing: 0.08em; color: var(--text-dim);
-    text-transform: uppercase; margin-bottom: 8px;
-  }
-  .stat-value {
-    font-family: var(--mono); font-size: 22px;
-    font-weight: 700; color: var(--text);
-  }
-  .stat-value.green { color: var(--green); }
-  .stat-value.red   { color: var(--red); }
-  .stat-value.amber { color: var(--amber); }
-  .stat-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:var(--cyan-dim)}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;padding:0;background:none;border:none}
+.uz-icon{font-size:26px;margin-bottom:10px;opacity:.6}
+.uz-text{font-size:13px;color:var(--text-mid);line-height:1.7}
+.uz-text b{color:var(--cyan)}
+.upload-prev{margin-top:12px;border-radius:9px;overflow:hidden;border:1px solid var(--border2);position:relative}
+.upload-prev img{width:100%;display:block;max-height:200px;object-fit:contain;background:var(--bg3)}
+.upload-prev-rm{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);border:none;color:var(--red);border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.upload-stat{margin-top:10px;font-family:var(--mono);font-size:11px;padding:8px 12px;border-radius:7px;display:none}
+.upload-stat.uploading{display:block;background:var(--gold-dim);color:var(--gold)}
+.upload-stat.done{display:block;background:var(--green-dim);color:var(--green)}
+.upload-stat.error{display:block;background:var(--red-dim);color:var(--red)}
+.prog-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+.prog-bar{height:100%;border-radius:2px;width:0%;transition:width .3s ease;background:linear-gradient(90deg,var(--purple),var(--cyan))}
+.upload-info{margin-top:16px;padding:14px 16px;background:var(--bg3);border-radius:9px;border:1px solid var(--border)}
+.ui-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px}
+.ui-steps{font-size:12px;color:var(--text-mid);line-height:2}
+.ui-steps b{color:var(--gold)}
+.btn-save{
+  width:100%;padding:15px;border-radius:10px;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;
+  margin-top:20px;box-shadow:0 4px 20px var(--purple-glow);transition:all .2s;position:relative;overflow:hidden;
+}
+.btn-save::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent)}
+.btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--purple-glow)}
+.btn-save:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 
-  /* ── Log Table ── */
-  .section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .section-title {
-    font-family: var(--mono); font-size: 12px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--text-dim);
-  }
-  .filter-bar { display: flex; gap: 8px; align-items: center; }
-  .filter-select, .filter-input {
-    background: var(--bg2); border: 1px solid var(--border);
-    color: var(--text); border-radius: 7px;
-    padding: 6px 12px; font-size: 12px; font-family: var(--sans);
-    outline: none; cursor: pointer;
-  }
-  .filter-select:focus, .filter-input:focus { border-color: var(--green); }
+/* CUSTOM CALENDAR */
+.cal-wrap{position:relative}
+.cal-input-btn{
+  width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:9px;color:var(--text);font-size:13px;font-family:var(--sans);
+  outline:none;cursor:pointer;text-align:left;transition:all .2s;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cal-input-btn:hover,.cal-input-btn.open{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-dim)}
+.cal-popup{
+  position:absolute;top:calc(100% + 8px);left:0;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:14px;padding:18px;z-index:300;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(162,89,255,.1);
+  width:280px;display:none;animation:calIn .18s ease;
+}
+.cal-popup.open{display:block}
+@keyframes calIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-nav{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:7px;
+  width:30px;height:30px;cursor:pointer;color:var(--text-mid);
+  display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;
+}
+.cal-nav:hover{border-color:var(--purple);color:var(--purple)}
+.cal-month-label{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;letter-spacing:.05em;cursor:pointer}
+.cal-month-label:hover{color:var(--cyan)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px}
+.cal-dow span{text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding:4px 0}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px;font-family:var(--mono);cursor:pointer;color:var(--text-mid);transition:all .15s;border:1px solid transparent}
+.cal-day:hover{background:var(--purple-dim);color:var(--purple);border-color:rgba(162,89,255,.2)}
+.cal-day.today{border-color:var(--purple);color:var(--purple)}
+.cal-day.selected{background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;border-color:transparent;box-shadow:0 2px 10px var(--purple-glow)}
+.cal-day.other-month{opacity:.2;pointer-events:none}
+.cal-day.disabled{opacity:.15;pointer-events:none}
+.cal-month-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cal-m{padding:8px 4px;border-radius:7px;text-align:center;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--text-mid);border:1px solid var(--border);transition:all .15s}
+.cal-m:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-dim)}
+.cal-m.sel{background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;border-color:transparent}
+.cal-year-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cal-y{padding:8px 4px;border-radius:7px;text-align:center;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--text-mid);border:1px solid var(--border);transition:all .15s}
+.cal-y:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+.cal-y.sel{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;border-color:transparent}
 
-  .table-wrap {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden;
-  }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { border-bottom: 1px solid var(--border); }
-  th {
-    padding: 12px 16px; text-align: left;
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--text-dim); font-weight: 400;
-  }
-  td {
-    padding: 13px 16px; font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background .12s; }
-  tbody tr:hover { background: var(--bg3); }
+/* GALLERY */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;margin-top:8px}
+.gcard{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s}
+.gcard:hover{border-color:var(--purple);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.4),0 0 0 1px rgba(162,89,255,.15)}
+.gcard-img{width:100%;height:160px;object-fit:cover;display:block;background:var(--bg3)}
+.gcard-no-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:var(--bg3);font-size:32px;opacity:.3}
+.gcard-body{padding:14px 16px}
+.gcard-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.gcard-pair{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple)}
+.gcard-date{font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+.gcard-rr{font-family:var(--mono);font-size:12px}
+.gcard-note{font-size:12px;color:var(--text-mid);margin-top:6px;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 
-  .badge {
-    display: inline-block; padding: 3px 10px;
-    border-radius: 20px; font-size: 11px;
-    font-family: var(--mono); font-weight: 700; letter-spacing: 0.05em;
-  }
-  .badge-win  { background: var(--green-dim); color: var(--green); }
-  .badge-loss { background: var(--red-dim);   color: var(--red);   }
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:32px;width:100%;max-width:500px;animation:calIn .22s ease;position:relative;overflow:hidden}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),transparent)}
+.modal-title{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:10px}
+.modal-close{margin-left:auto;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:20px;transition:color .15s;line-height:1}
+.modal-close:hover{color:#fff}
+.modal-note{background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.15);border-radius:9px;padding:12px 14px;font-size:12px;color:var(--gold);margin-bottom:20px;line-height:1.65}
+.modal-footer{display:flex;gap:10px;margin-top:24px}
+.btn-modal-save{flex:1;padding:12px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s}
+.btn-modal-save:hover{box-shadow:0 4px 18px var(--purple-glow)}
+.btn-modal-test{padding:12px 18px;border-radius:9px;background:var(--bg3);border:1px solid var(--border2);color:var(--cyan);font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-modal-test:hover{border-color:var(--cyan);box-shadow:0 0 10px var(--cyan-glow)}
+.btn-modal-cancel{padding:12px 18px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);color:var(--text-mid);font-family:var(--mono);font-size:12px;cursor:pointer}
+.test-out{display:none;margin-top:14px;padding:12px 14px;border-radius:8px;font-family:var(--mono);font-size:11px;line-height:1.7;white-space:pre-line}
 
-  .pair-chip {
-    display: inline-block; padding: 3px 9px;
-    border-radius: 5px; font-size: 11px; font-family: var(--mono);
-    background: var(--bg3); color: var(--amber); border: 1px solid var(--border);
-  }
-  .session-dot {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--text-mid);
-  }
-  .session-dot::before {
-    content: ''; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--blue); flex-shrink: 0;
-  }
-  .session-dot.asian::before  { background: #f7b731; }
-  .session-dot.london::before { background: #3d9cf0; }
-  .session-dot.newyork::before{ background: var(--green); }
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.93);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:85vh;border-radius:10px;object-fit:contain;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.lb-close{position:absolute;top:20px;right:24px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:50%;width:40px;height:40px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.lb-close:hover{background:rgba(255,255,255,.2)}
 
-  .thumb-btn {
-    width: 42px; height: 32px; border-radius: 6px;
-    border: 1px solid var(--border); background: var(--bg3);
-    cursor: pointer; overflow: hidden; transition: border-color .15s;
-  }
-  .thumb-btn:hover { border-color: var(--green); }
-  .thumb-btn img { width: 100%; height: 100%; object-fit: cover; }
-  .thumb-btn.no-img {
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim); font-size: 16px;
-  }
+/* TOAST */
+#toasts{position:fixed;bottom:28px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{padding:12px 18px;border-radius:10px;font-family:var(--mono);font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:toastIn .25s ease;max-width:340px;border:1px solid transparent}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast.success{background:var(--green-dim);color:var(--green);border-color:rgba(5,245,160,.25)}
+.toast.error{background:var(--red-dim);color:var(--red);border-color:rgba(255,76,110,.25)}
+.toast.info{background:var(--bg3);color:var(--text);border-color:var(--border2)}
 
-  .rr-val { font-family: var(--mono); color: var(--amber); }
-
-  .btn-del {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-dim); font-size: 16px; padding: 4px 8px;
-    border-radius: 5px; transition: all .15s;
-  }
-  .btn-del:hover { color: var(--red); background: var(--red-dim); }
-
-  .empty-state {
-    padding: 60px 20px; text-align: center;
-    color: var(--text-dim); font-family: var(--mono); font-size: 12px;
-  }
-
-  /* ── Add Form Page ── */
-  .form-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 24px; margin-top: 28px;
-  }
-  .form-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 14px; padding: 28px;
-  }
-  .form-card-title {
-    font-family: var(--mono); font-size: 11px;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--text-dim); margin-bottom: 22px;
-    padding-bottom: 14px; border-bottom: 1px solid var(--border);
-  }
-  .form-group { margin-bottom: 18px; }
-  .form-group:last-child { margin-bottom: 0; }
-  label {
-    display: block; font-size: 11px; font-family: var(--mono);
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-dim); margin-bottom: 7px;
-  }
-  input[type="date"], input[type="time"], input[type="number"],
-  input[type="text"], select, textarea {
-    width: 100%; padding: 10px 14px;
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text);
-    font-size: 13px; font-family: var(--sans);
-    outline: none; transition: border-color .15s;
-    appearance: none; -webkit-appearance: none;
-  }
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 0 3px var(--green-dim);
-  }
-  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-  select option { background: var(--bg3); }
-
-  /* Result radio */
-  .result-radio { display: flex; gap: 10px; }
-  .result-radio input { display: none; }
-  .result-radio label {
-    flex: 1; text-align: center; padding: 10px;
-    border: 1px solid var(--border); border-radius: 8px;
-    cursor: pointer; font-size: 13px; font-weight: 600;
-    font-family: var(--mono); letter-spacing: 0.05em;
-    transition: all .15s; text-transform: uppercase;
-    color: var(--text-dim); background: var(--bg3);
-  }
-  .result-radio input[value="Win"]:checked + label {
-    border-color: var(--green); color: var(--green);
-    background: var(--green-dim);
-  }
-  .result-radio input[value="Loss"]:checked + label {
-    border-color: var(--red); color: var(--red);
-    background: var(--red-dim);
-  }
-
-  /* Image upload zone */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 10px; padding: 32px 20px;
-    text-align: center; cursor: pointer;
-    transition: all .2s; position: relative;
-    overflow: hidden;
-  }
-  .upload-zone:hover, .upload-zone.drag { border-color: var(--green); background: var(--green-dim); }
-  .upload-zone input[type="file"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    width: 100%; padding: 0; background: none; border: none;
-  }
-  .upload-icon { font-size: 28px; margin-bottom: 10px; }
-  .upload-text { font-size: 13px; color: var(--text-mid); }
-  .upload-text b { color: var(--green); }
-  .upload-preview {
-    margin-top: 14px; border-radius: 8px; overflow: hidden;
-    border: 1px solid var(--border); position: relative;
-  }
-  .upload-preview img { width: 100%; display: block; max-height: 220px; object-fit: contain; }
-  .upload-preview-remove {
-    position: absolute; top: 8px; right: 8px;
-    background: rgba(0,0,0,.7); border: none;
-    color: var(--red); border-radius: 50%; width: 26px; height: 26px;
-    cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
-  }
-  .upload-status {
-    margin-top: 10px; font-family: var(--mono); font-size: 11px;
-    padding: 8px 12px; border-radius: 6px; display: none;
-  }
-  .upload-status.uploading { display: block; background: var(--amber-dim); color: var(--amber); }
-  .upload-status.done      { display: block; background: var(--green-dim); color: var(--green); }
-  .upload-status.error     { display: block; background: var(--red-dim);   color: var(--red);   }
-
-  .progress-bar-wrap {
-    height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden;
-  }
-  .progress-bar {
-    height: 100%; background: var(--green); border-radius: 2px;
-    width: 0%; transition: width .3s ease;
-  }
-
-  /* Submit Button */
-  .btn-submit {
-    width: 100%; padding: 14px;
-    background: var(--green); color: #000;
-    font-family: var(--mono); font-size: 13px;
-    font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; border: none;
-    border-radius: 9px; cursor: pointer;
-    transition: all .2s; margin-top: 20px;
-  }
-  .btn-submit:hover { background: #00ffa8; transform: translateY(-1px); }
-  .btn-submit:disabled {
-    opacity: .45; cursor: not-allowed; transform: none;
-  }
-  .btn-submit.loading { opacity: .6; cursor: wait; }
-
-  /* ── Settings Modal ── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 999;
-    background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
-    display: none; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--bg2); border: 1px solid var(--border2);
-    border-radius: 16px; padding: 32px; width: 100%; max-width: 500px;
-    animation: modalIn .2s ease;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: translateY(12px) scale(.97); }
-    to   { opacity: 1; transform: none; }
-  }
-  .modal-title {
-    font-family: var(--mono); font-size: 14px;
-    font-weight: 700; letter-spacing: 0.08em;
-    margin-bottom: 22px; color: var(--text);
-    display: flex; align-items: center; gap: 10px;
-  }
-  .modal-close {
-    margin-left: auto; background: none; border: none;
-    color: var(--text-dim); cursor: pointer; font-size: 20px;
-    line-height: 1;
-  }
-  .modal-close:hover { color: var(--text); }
-  .modal-note {
-    background: var(--amber-dim); border: 1px solid #f7b73140;
-    border-radius: 8px; padding: 12px 14px;
-    font-size: 12px; color: var(--amber); margin-bottom: 20px;
-    line-height: 1.6;
-  }
-  .modal-footer { display: flex; gap: 10px; margin-top: 24px; }
-  .btn-save-settings {
-    flex: 1; padding: 11px; border-radius: 8px;
-    background: var(--green); color: #000;
-    font-family: var(--mono); font-size: 12px;
-    font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.08em; border: none; cursor: pointer;
-    transition: all .15s;
-  }
-  .btn-save-settings:hover { background: #00ffa8; }
-  .btn-cancel {
-    padding: 11px 20px; border-radius: 8px;
-    background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text-dim); font-family: var(--mono);
-    font-size: 12px; cursor: pointer; transition: all .15s;
-  }
-  .btn-cancel:hover { color: var(--text); }
-  .config-status {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.06em; padding: 4px 10px; border-radius: 20px;
-  }
-  .config-status.ok      { background: var(--green-dim); color: var(--green); }
-  .config-status.not-set { background: var(--red-dim); color: var(--red); }
-
-  /* ── Image Lightbox ── */
-  .lightbox {
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(0,0,0,.92); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center; padding: 20px;
-  }
-  .lightbox.open { display: flex; }
-  .lightbox img {
-    max-width: 90vw; max-height: 85vh;
-    border-radius: 10px; object-fit: contain;
-    box-shadow: 0 30px 80px rgba(0,0,0,.6);
-  }
-  .lightbox-close {
-    position: absolute; top: 20px; right: 24px;
-    background: none; border: none; color: #fff;
-    font-size: 32px; cursor: pointer; opacity: .7;
-  }
-  .lightbox-close:hover { opacity: 1; }
-
-  /* ── Toast ── */
-  #toast-container {
-    position: fixed; bottom: 28px; right: 24px; z-index: 9999;
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-  }
-  .toast {
-    padding: 12px 18px; border-radius: 9px;
-    font-family: var(--mono); font-size: 12px;
-    box-shadow: 0 8px 28px rgba(0,0,0,.5);
-    animation: toastIn .25s ease; max-width: 320px;
-  }
-  @keyframes toastIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
-  .toast.success { background: var(--green); color: #000; }
-  .toast.error   { background: var(--red);   color: #fff; }
-  .toast.info    { background: var(--bg3);   color: var(--text); border: 1px solid var(--border2); }
-
-  /* No-config banner */
-  .no-config-banner {
-    background: var(--red-dim); border: 1px solid #ff4d6d40;
-    border-radius: 10px; padding: 16px 20px;
-    display: flex; align-items: center; gap: 14px;
-    margin-bottom: 24px; font-size: 13px; color: var(--red);
-  }
-  .no-config-banner button {
-    margin-left: auto; padding: 7px 16px; border-radius: 7px;
-    background: var(--red); color: #fff; border: none;
-    font-family: var(--mono); font-size: 11px;
-    font-weight: 700; cursor: pointer; white-space: nowrap;
-  }
-
-  /* ── Dashboard / Gallery Page ── */
-  .gallery-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px; margin-top: 20px;
-  }
-  .gallery-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden; cursor: pointer;
-    transition: all .2s;
-  }
-  .gallery-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,229,160,.08); }
-  .gallery-img {
-    width: 100%; height: 150px; object-fit: cover; display: block;
-    background: var(--bg3);
-  }
-  .gallery-no-img {
-    width: 100%; height: 150px; display: flex; align-items: center;
-    justify-content: center; background: var(--bg3);
-    color: var(--text-dim); font-size: 28px;
-  }
-  .gallery-info { padding: 14px 16px; }
-  .gallery-info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .gallery-date { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
-  .gallery-pair { font-family: var(--mono); font-size: 13px; color: var(--amber); font-weight: 700; }
-  .gallery-rr   { font-family: var(--mono); font-size: 12px; color: var(--text-mid); }
-  .gallery-note { font-size: 12px; color: var(--text-dim); margin-top: 6px; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .stats-bar { grid-template-columns: repeat(2, 1fr); }
-    .form-grid { grid-template-columns: 1fr; }
-    nav { padding: 0 16px; }
-    .container { padding: 16px; }
-    .stat-value { font-size: 18px; }
-  }
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .form-layout{grid-template-columns:1fr}
+  nav{padding:0 16px}.wrap{padding:20px 16px}
+}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════ NAV ═══ -->
 <nav>
   <div class="nav-logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-    </svg>
-    BACKTEST<span style="color:var(--text-dim);font-weight:400">·TRACK</span>
+    <div class="nav-logo-icon">📈</div>
+    BACKTEST<span style="opacity:.4;font-weight:300">·TRACK</span>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('log')">📋 Log</button>
-    <button class="nav-tab" onclick="showPage('add')">➕ Add Trade</button>
-    <button class="nav-tab" onclick="showPage('gallery')">🖼️ Gallery</button>
+    <button class="nav-tab" onclick="showPage('add')">＋ Add Trade</button>
+    <button class="nav-tab" onclick="showPage('gallery')">🖼 Gallery</button>
   </div>
   <div class="nav-right">
-    <span id="config-badge" class="config-status not-set">NOT CONFIGURED</span>
-    <button class="btn-settings" onclick="openSettings()">⚙ Settings</button>
+    <span id="cfg-badge" class="cfg-badge bad">NOT CONFIGURED</span>
+    <button class="btn-cfg" onclick="openSettings()">⚙ Settings</button>
   </div>
 </nav>
+<div id="toasts"></div>
 
-<div id="toast-container"></div>
-
-<!-- ═══════════════════════════════════════ PAGE: LOG ═══ -->
+<!-- PAGE: LOG -->
 <div id="page-log" class="page active">
-  <div class="container">
-
-    <div id="no-config-banner" class="no-config-banner" style="display:none;">
-      <span>⚠ ยังไม่ได้ตั้งค่า GitHub Token และ Repository — ข้อมูลจะไม่ถูกบันทึก!</span>
-      <button onclick="openSettings()">ตั้งค่าเลย</button>
+  <div class="wrap">
+    <div class="no-cfg-banner" id="no-cfg-banner">
+      <span>⚠ ยังไม่ได้ตั้งค่า GitHub — ข้อมูลจะไม่ถูกบันทึก</span>
+      <button onclick="openSettings()">ตั้งค่าเลย →</button>
     </div>
-
-    <!-- Stats -->
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-label">Total Trades</div>
-        <div class="stat-value" id="s-total">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Win Rate</div>
-        <div class="stat-value green" id="s-winrate">0%</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg R:R</div>
-        <div class="stat-value amber" id="s-avg-rr">0.0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Best Pair</div>
-        <div class="stat-value" id="s-best-pair" style="font-size:15px;">—</div>
-        <div class="stat-sub" id="s-best-pair-sub"></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Best Session</div>
-        <div class="stat-value" id="s-best-session" style="font-size:15px;">—</div>
-        <div class="stat-sub" id="s-best-session-sub"></div>
-      </div>
+    <div class="stats-grid">
+      <div class="scard"><div class="scard-accent sa-multi"></div><div class="scard-label">Total Trades</div><div class="scard-val" id="s-total">0</div><div class="scard-sub" id="s-wl">—</div></div>
+      <div class="scard"><div class="scard-accent sa-cyan"></div><div class="scard-label">Win Rate</div><div class="scard-val sv-cyan" id="s-wr">0%</div><div class="scard-sub" id="s-wr-sub">—</div></div>
+      <div class="scard"><div class="scard-accent sa-gold"></div><div class="scard-label">Avg R:R <span style="font-size:9px;opacity:.6">(Win)</span></div><div class="scard-val sv-gold" id="s-avg">0.0R</div><div class="scard-sub" id="s-avg-sub">—</div></div>
+      <div class="scard"><div class="scard-accent sa-green"></div><div class="scard-label">Net R:R</div><div class="scard-val" id="s-net">0.0R</div><div class="scard-sub" id="s-net-sub">—</div></div>
+      <div class="scard"><div class="scard-accent sa-purple"></div><div class="scard-label">Best Pair</div><div class="scard-val" id="s-pair" style="font-size:18px">—</div><div class="scard-sub" id="s-pair-sub">—</div></div>
+      <div class="scard"><div class="scard-accent sa-cyan"></div><div class="scard-label">Best Session</div><div class="scard-val" id="s-sess" style="font-size:16px">—</div><div class="scard-sub" id="s-sess-sub">—</div></div>
     </div>
-
-    <!-- Filter -->
-    <div class="section-header">
+    <div class="section-hdr">
       <div class="section-title">Trade History</div>
-      <div class="filter-bar">
-        <select class="filter-select" id="filter-result" onchange="renderTable()">
-          <option value="">All Results</option>
-          <option value="Win">Win</option>
-          <option value="Loss">Loss</option>
-        </select>
-        <select class="filter-select" id="filter-pair" onchange="renderTable()">
-          <option value="">All Pairs</option>
-        </select>
-        <select class="filter-select" id="filter-session" onchange="renderTable()">
-          <option value="">All Sessions</option>
-          <option value="Asian">Asian</option>
-          <option value="London">London</option>
-          <option value="New York">New York</option>
-        </select>
+      <div class="filters">
+        <select class="fsel" id="f-res" onchange="renderTable()"><option value="">All Results</option><option value="Win">Win</option><option value="Loss">Loss</option></select>
+        <select class="fsel" id="f-pair-fil" onchange="renderTable()"><option value="">All Pairs</option></select>
+        <select class="fsel" id="f-sess-fil" onchange="renderTable()"><option value="">All Sessions</option><option value="Asian">Asian</option><option value="London">London</option><option value="New York">New York</option></select>
       </div>
     </div>
-
-    <div class="table-wrap">
+    <div class="tbl-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Pair</th>
-            <th>Session</th>
-            <th>Entry</th>
-            <th>Result</th>
-            <th>R:R</th>
-            <th>Note</th>
-            <th>Chart</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="trade-tbody"></tbody>
+        <thead><tr><th>Date</th><th>Pair</th><th>Session</th><th>Entry</th><th>Result</th><th>R:R</th><th>Note</th><th>Chart</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
-
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ PAGE: ADD ═══ -->
+<!-- PAGE: ADD -->
 <div id="page-add" class="page">
-  <div class="container">
-    <div style="margin-bottom:4px;">
-      <div class="section-title">New Trade Entry</div>
+  <div class="wrap">
+    <div class="page-header">
+      <div class="page-title">New Trade Entry</div>
+      <div class="page-sub">กรอกรายละเอียดและ upload รูป screenshot ของ chart</div>
     </div>
-
-    <div class="form-grid">
-      <!-- Left: Trade Info -->
+    <div class="form-layout">
       <div>
-        <div class="form-card">
-          <div class="form-card-title">📊 Trade Details</div>
-
-          <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="f-date" />
-          </div>
-
-          <div class="form-group">
-            <label>Pair / Instrument</label>
-            <select id="f-pair">
-              <optgroup label="Indices">
-                <option>NAS100</option><option>SPX500</option><option>US30</option>
-                <option>DAX40</option><option>UK100</option>
-              </optgroup>
-              <optgroup label="FX Majors">
-                <option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option>
-                <option>USDJPY</option><option>AUDUSD</option><option>USDCAD</option>
-              </optgroup>
-              <optgroup label="Other">
-                <option>BTCUSD</option><option>ETHUSD</option><option>OIL</option>
-                <option value="custom">Custom...</option>
-              </optgroup>
-            </select>
-            <input type="text" id="f-pair-custom" placeholder="กรอก Pair เอง" style="margin-top:8px;display:none;" />
-          </div>
-
-          <div class="form-group">
-            <label>Session</label>
-            <select id="f-session">
-              <option>Asian</option>
-              <option>London</option>
-              <option selected>New York</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Time Entry</label>
-            <input type="time" id="f-time" />
-          </div>
-
-          <div class="form-group">
-            <label>Result</label>
-            <div class="result-radio">
-              <input type="radio" name="result" id="r-win" value="Win" checked />
-              <label for="r-win">✓ Win</label>
-              <input type="radio" name="result" id="r-loss" value="Loss" />
-              <label for="r-loss">✗ Loss</label>
+        <div class="fcard">
+          <div class="fcard-title">📊 Trade Details</div>
+          <div class="fg">
+            <label class="flabel">Date</label>
+            <div class="cal-wrap">
+              <button class="cal-input-btn" id="cal-btn" onclick="toggleCal(event)" type="button">
+                <span id="cal-display">เลือกวันที่</span><span>📅</span>
+              </button>
+              <input type="hidden" id="f-date"/>
+              <div class="cal-popup" id="cal-popup">
+                <div class="cal-header">
+                  <button class="cal-nav" onclick="calNav(-1)" type="button">‹</button>
+                  <div class="cal-month-label" id="cal-lbl" onclick="toggleCalView()"></div>
+                  <button class="cal-nav" onclick="calNav(1)" type="button">›</button>
+                </div>
+                <div id="cal-body"></div>
+              </div>
             </div>
           </div>
-
-          <div class="form-group">
-            <label>Risk : Reward (R:R)</label>
-            <input type="number" id="f-rr" step="0.1" min="0" placeholder="e.g. 2.5" />
+          <div class="fg">
+            <label class="flabel">Pair / Instrument</label>
+            <select class="finput" id="f-pair">
+              <optgroup label="Indices"><option>NAS100</option><option>SPX500</option><option>US30</option><option>DAX40</option><option>UK100</option></optgroup>
+              <optgroup label="FX &amp; Metals"><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>AUDUSD</option><option>USDCAD</option></optgroup>
+              <optgroup label="Crypto &amp; Commodities"><option>BTCUSD</option><option>ETHUSD</option><option>OIL</option><option value="custom">Custom...</option></optgroup>
+            </select>
+            <input type="text" class="finput" id="f-pair-custom" placeholder="พิมพ์ Pair เอง" style="margin-top:8px;display:none"/>
           </div>
-
-          <div class="form-group">
-            <label>Note / Observation</label>
-            <textarea id="f-note" placeholder="เช่น เข้าตรง OB ที่ 4H, confluences มาจาก FVG + structure break..."></textarea>
+          <div class="fg">
+            <label class="flabel">Session</label>
+            <select class="finput" id="f-session"><option>Asian</option><option>London</option><option selected>New York</option></select>
+          </div>
+          <div class="fg">
+            <label class="flabel">Time Entry</label>
+            <input type="time" class="finput" id="f-time"/>
+          </div>
+          <div class="fg">
+            <label class="flabel">Result</label>
+            <div class="result-wrap">
+              <input type="radio" name="result" id="r-win" value="Win" checked/><label for="r-win">✓ WIN</label>
+              <input type="radio" name="result" id="r-loss" value="Loss"/><label for="r-loss">✗ LOSS</label>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flabel">R:R &nbsp;<span style="opacity:.45;font-weight:400;font-size:9px">Loss = ใส่ติดลบ เช่น -1</span></label>
+            <input type="number" class="finput" id="f-rr" step="0.1" placeholder="Win: 2.5  /  Loss: -1"/>
+          </div>
+          <div class="fg">
+            <label class="flabel">Note / Observation</label>
+            <textarea class="finput" id="f-note" placeholder="เช่น เข้าตรง OB ที่ 4H, confluences มาจาก FVG + structure break..."></textarea>
           </div>
         </div>
       </div>
-
-      <!-- Right: Image Upload -->
-      <div>
-        <div class="form-card">
-          <div class="form-card-title">📸 Chart Screenshot</div>
-
+      <div style="display:flex;flex-direction:column">
+        <div class="fcard" style="flex:1">
+          <div class="fcard-title">📸 Chart Screenshot</div>
           <div class="upload-zone" id="drop-zone">
-            <input type="file" id="f-image" accept="image/*" onchange="handleFileSelect(event)" />
-            <div class="upload-icon">📷</div>
-            <div class="upload-text">
-              <b>Click to browse</b> or drag & drop<br>
-              <span style="font-size:11px;opacity:.6">PNG, JPG, WEBP — max 10MB</span>
+            <input type="file" id="f-image" accept="image/*" onchange="handleFile(event)"/>
+            <div class="uz-icon">🖼</div>
+            <div class="uz-text"><b>Click to browse</b> หรือ drag &amp; drop<br><span style="font-size:11px;opacity:.5">PNG, JPG, WEBP — max 10MB</span></div>
+          </div>
+          <div id="prev-wrap" style="display:none">
+            <div class="upload-prev">
+              <img id="prev-img" src="" alt=""/>
+              <button class="upload-prev-rm" onclick="clearImg()">✕</button>
             </div>
           </div>
-          <div id="upload-preview-wrap" style="display:none;">
-            <div class="upload-preview">
-              <img id="upload-preview-img" src="" alt="preview" />
-              <button class="upload-preview-remove" onclick="clearImage()">✕</button>
-            </div>
-          </div>
-          <div class="upload-status" id="upload-status"></div>
-          <div class="progress-bar-wrap" id="progress-wrap" style="display:none;">
-            <div class="progress-bar" id="progress-bar"></div>
-          </div>
-
-          <div style="margin-top:18px; padding:14px; background:var(--bg3); border-radius:8px; border:1px solid var(--border);">
-            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px;">Upload Flow</div>
-            <div style="font-size:12px;color:var(--text-mid);line-height:1.9;">
-              1. เลือกรูป → ดูตัวอย่างที่นี่<br>
-              2. กด Save → รูปจะ upload ไป <b style="color:var(--amber)">GitHub → images/</b><br>
-              3. ได้ raw URL มา → บันทึกลง <b style="color:var(--amber)">data.json</b><br>
-              4. ข้อมูลปรากฏใน Log ทันที
-            </div>
+          <div class="upload-stat" id="up-stat"></div>
+          <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+          <div class="upload-info">
+            <div class="ui-title">Upload Flow</div>
+            <div class="ui-steps">1. เลือกรูป → ดูตัวอย่างที่นี่<br>2. กด Save → upload ไป <b>GitHub / images/</b><br>3. ได้ raw URL → บันทึกลง <b>data.json</b><br>4. ปรากฏใน Log &amp; Gallery ทันที</div>
           </div>
         </div>
-
-        <button class="btn-submit" id="btn-submit" onclick="saveTrade()">
-          ⚡ SAVE TRADE
-        </button>
+        <button class="btn-save" id="btn-save" onclick="saveTrade()">⚡ SAVE TRADE</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═════════════════════════════════════ PAGE: GALLERY ═══ -->
+<!-- PAGE: GALLERY -->
 <div id="page-gallery" class="page">
-  <div class="container">
-    <div class="section-header">
+  <div class="wrap">
+    <div class="section-hdr">
       <div class="section-title">Chart Gallery</div>
-      <div class="filter-bar">
-        <select class="filter-select" id="g-filter-result" onchange="renderGallery()">
-          <option value="">All</option>
-          <option value="Win">Win only</option>
-          <option value="Loss">Loss only</option>
-        </select>
+      <div class="filters">
+        <select class="fsel" id="g-res" onchange="renderGallery()"><option value="">All Trades</option><option value="Win">Win only</option><option value="Loss">Loss only</option></select>
       </div>
     </div>
-    <div class="gallery-grid" id="gallery-grid"></div>
+    <div class="gallery-grid" id="gallery"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════ SETTINGS MODAL ═══ -->
-<div class="modal-overlay" id="settings-modal">
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settings-overlay">
   <div class="modal">
-    <div class="modal-title">
-      ⚙ GitHub Configuration
-      <button class="modal-close" onclick="closeSettings()">✕</button>
-    </div>
-    <div class="modal-note">
-      🔐 ข้อมูลเหล่านี้เก็บใน <b>localStorage</b> ของ browser คุณเท่านั้น — ไม่ถูกส่งไปที่ไหนนอกจาก GitHub API โดยตรง<br><br>
-      ต้องสร้าง GitHub Token ที่มี permission: <b>repo</b> (Read + Write contents)
-    </div>
-    <div class="form-group">
-      <label>GitHub Personal Access Token</label>
-      <input type="text" id="cfg-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
-    </div>
-    <div class="form-group">
-      <label>Repository (user/repo-name)</label>
-      <input type="text" id="cfg-repo" placeholder="yourname/backtest-data" />
-    </div>
-    <div class="form-group">
-      <label>Branch</label>
-      <input type="text" id="cfg-branch" placeholder="main" />
-    </div>
-    <div style="margin-top:6px;font-size:12px;color:var(--text-dim);line-height:1.7;">
-      ไฟล์จะถูกสร้างใน repo:<br>
-      📁 <code style="color:var(--amber)">data.json</code> — เก็บข้อมูลทั้งหมด<br>
-      📁 <code style="color:var(--amber)">images/</code> — เก็บรูป screenshot
-    </div>
+    <div class="modal-title">⚙ GitHub Configuration<button class="modal-close" onclick="closeSettings()">✕</button></div>
+    <div class="modal-note">🔐 ข้อมูลเก็บใน <b>localStorage</b> ของ browser เท่านั้น<br>ต้องสร้าง Token ที่มีสิทธิ์: <b>Contents — Read &amp; Write</b></div>
+    <div class="fg"><label class="flabel">GitHub Personal Access Token</label><input type="text" class="finput" id="cfg-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/></div>
+    <div class="fg"><label class="flabel">Repository (user/repo-name)</label><input type="text" class="finput" id="cfg-repo" placeholder="yourname/backtest-data"/></div>
+    <div class="fg"><label class="flabel">Branch</label><input type="text" class="finput" id="cfg-branch" placeholder="main"/></div>
+    <div style="font-size:12px;color:var(--text-mid);line-height:1.9;margin-top:6px">📁 <code style="color:var(--gold)">data.json</code> — ข้อมูล trade ทั้งหมด<br>📁 <code style="color:var(--gold)">images/</code> — รูป chart screenshot</div>
+    <div class="test-out" id="test-out"></div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
-      <button class="btn-save-settings" onclick="saveSettings()">💾 Save Config</button>
+      <button class="btn-modal-test" onclick="testConn()">🔌 Test</button>
+      <button class="btn-modal-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-modal-save" onclick="saveSettings()">💾 Save</button>
     </div>
   </div>
 </div>
 
-<!-- ═════════════════════════════════════════ LIGHTBOX ═══ -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLb()">
+  <button class="lb-close" onclick="closeLb()">✕</button>
+  <img id="lb-img" src="" alt="" onclick="event.stopPropagation()"/>
 </div>
 
-<!-- ═══════════════════════════════════════════ SCRIPT ═══ -->
 <script>
-/* ────────────────────────── State ───────────────────── */
-let trades = [];
-let cfg = { token: '', repo: '', branch: 'main' };
-let selectedFile = null;
-let uploadedImageUrl = '';
+let trades=[],cfg={token:'',repo:'',branch:'main'},selFile=null;
 
-/* ────────────────────────── Init ────────────────────── */
-window.onload = async () => {
-  loadConfig();
-  setTodayDate();
-  setupDragDrop();
-  setupPairCustom();
-  await loadTrades();
-  checkConfig();
+window.onload=async()=>{
+  loadCfg();calInit();initTime();setupDrop();setupPairCustom();
+  document.addEventListener('click',e=>{if(!e.target.closest('.cal-wrap'))closeCal();});
+  await loadTrades();checkCfg();
 };
 
-function setTodayDate() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('f-date').value = today;
-  // Set current time
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2,'0');
-  const mm = String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('f-time').value = `${hh}:${mm}`;
-}
+function initTime(){const n=new Date();document.getElementById('f-time').value=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
 
-/* ────────────────────────── Config ──────────────────── */
-function loadConfig() {
-  cfg.token  = localStorage.getItem('gh_token') || '';
-  cfg.repo   = localStorage.getItem('gh_repo')  || '';
-  cfg.branch = localStorage.getItem('gh_branch') || 'main';
-}
+/* CONFIG */
+function loadCfg(){cfg.token=localStorage.getItem('gh_token')||'';cfg.repo=localStorage.getItem('gh_repo')||'';cfg.branch=localStorage.getItem('gh_branch')||'main';}
+function saveSettings(){cfg.token=document.getElementById('cfg-token').value.trim();cfg.repo=document.getElementById('cfg-repo').value.trim();cfg.branch=document.getElementById('cfg-branch').value.trim()||'main';localStorage.setItem('gh_token',cfg.token);localStorage.setItem('gh_repo',cfg.repo);localStorage.setItem('gh_branch',cfg.branch);checkCfg();closeSettings();toast('✓ Config saved','success');loadTrades();}
+function checkCfg(){const ok=cfg.token&&cfg.repo;const b=document.getElementById('cfg-badge');b.textContent=ok?'CONNECTED':'NOT CONFIGURED';b.className='cfg-badge '+(ok?'ok':'bad');const bn=document.getElementById('no-cfg-banner');if(bn)bn.style.display=ok?'none':'flex';document.getElementById('cfg-token').value=cfg.token;document.getElementById('cfg-repo').value=cfg.repo;document.getElementById('cfg-branch').value=cfg.branch;}
+function openSettings(){document.getElementById('settings-overlay').classList.add('open');}
+function closeSettings(){document.getElementById('settings-overlay').classList.remove('open');document.getElementById('test-out').style.display='none';}
 
-function saveSettings() {
-  cfg.token  = document.getElementById('cfg-token').value.trim();
-  cfg.repo   = document.getElementById('cfg-repo').value.trim();
-  cfg.branch = document.getElementById('cfg-branch').value.trim() || 'main';
-  localStorage.setItem('gh_token',  cfg.token);
-  localStorage.setItem('gh_repo',   cfg.repo);
-  localStorage.setItem('gh_branch', cfg.branch);
-  checkConfig();
-  closeSettings();
-  toast('✓ Config saved', 'success');
-  loadTrades();
-}
+/* GITHUB */
+const GH=()=>`https://api.github.com/repos/${cfg.repo}/contents`;
+const HDR=()=>({'Authorization':`token ${cfg.token}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'});
+async function ghGet(p){const r=await fetch(`${GH()}/${p}?ref=${cfg.branch}`,{headers:HDR()});if(r.status===404)return null;if(!r.ok)throw new Error(`GitHub ${r.status}`);return r.json();}
+async function ghPut(p,b64,sha,msg){const body={message:msg,content:b64,branch:cfg.branch};if(sha)body.sha=sha;const r=await fetch(`${GH()}/${p}`,{method:'PUT',headers:HDR(),body:JSON.stringify(body)});if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||`GitHub ${r.status}`);}return r.json();}
 
-function checkConfig() {
-  const ok = cfg.token && cfg.repo;
-  const badge = document.getElementById('config-badge');
-  badge.textContent  = ok ? 'CONNECTED' : 'NOT CONFIGURED';
-  badge.className    = 'config-status ' + (ok ? 'ok' : 'not-set');
-  const banner = document.getElementById('no-config-banner');
-  if (banner) banner.style.display = ok ? 'none' : 'flex';
-  document.getElementById('cfg-token').value  = cfg.token;
-  document.getElementById('cfg-repo').value   = cfg.repo;
-  document.getElementById('cfg-branch').value = cfg.branch;
-}
+/* LOAD */
+async function loadTrades(){if(!cfg.token||!cfg.repo){renderAll();return;}try{const f=await ghGet('data.json');trades=f?JSON.parse(atob(f.content.replace(/\s/g,''))):[]; }catch(e){toast('⚠ โหลดไม่ได้: '+e.message,'error');trades=[];}renderAll();}
 
-function openSettings() { document.getElementById('settings-modal').classList.add('open'); }
-function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
-
-/* ────────────────────────── GitHub API ──────────────── */
-const GH = () => `https://api.github.com/repos/${cfg.repo}/contents`;
-const HEADERS = () => ({
-  'Authorization': `token ${cfg.token}`,
-  'Content-Type': 'application/json',
-  'Accept': 'application/vnd.github.v3+json',
-});
-
-async function ghGet(path) {
-  const r = await fetch(`${GH()}/${path}?ref=${cfg.branch}`, { headers: HEADERS() });
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error(`GitHub GET failed: ${r.status}`);
-  return r.json();
-}
-
-async function ghPut(path, content64, sha = null, message = 'update') {
-  const body = { message, content: content64, branch: cfg.branch };
-  if (sha) body.sha = sha;
-  const r = await fetch(`${GH()}/${path}`, {
-    method: 'PUT', headers: HEADERS(), body: JSON.stringify(body)
-  });
-  if (!r.ok) {
-    const e = await r.json().catch(() => ({}));
-    throw new Error(e.message || `GitHub PUT failed: ${r.status}`);
-  }
-  return r.json();
-}
-
-/* ────────────────────────── Load Trades ─────────────── */
-async function loadTrades() {
-  if (!cfg.token || !cfg.repo) { renderAll(); return; }
-  try {
-    const file = await ghGet('data.json');
-    if (!file) { trades = []; }
-    else {
-      const json = atob(file.content.replace(/\s/g,''));
-      trades = JSON.parse(json);
-    }
-  } catch(e) {
-    console.error(e);
-    toast('⚠ ไม่สามารถโหลดข้อมูลจาก GitHub ได้', 'error');
-    trades = [];
-  }
-  renderAll();
-}
-
-/* ────────────────────────── Save Trade ─────────────── */
-async function saveTrade() {
-  if (!cfg.token || !cfg.repo) { toast('⚠ กรุณาตั้งค่า GitHub ก่อน', 'error'); openSettings(); return; }
-
-  const pairSel = document.getElementById('f-pair').value;
-  const pair = pairSel === 'custom'
-    ? document.getElementById('f-pair-custom').value.trim().toUpperCase()
-    : pairSel;
-
-  const date    = document.getElementById('f-date').value;
-  const session = document.getElementById('f-session').value;
-  const timeRaw = document.getElementById('f-time').value;
-  const result  = document.querySelector('input[name="result"]:checked')?.value;
-  const rr      = parseFloat(document.getElementById('f-rr').value);
-  const note    = document.getElementById('f-note').value.trim();
-
-  if (!date || !pair || !session || !timeRaw || !result || isNaN(rr)) {
-    toast('⚠ กรอกข้อมูลให้ครบก่อนนะ (Date, Pair, Session, Time, Result, R:R)', 'error');
-    return;
-  }
-
-  const btn = document.getElementById('btn-submit');
-  btn.disabled = true; btn.textContent = '⏳ Saving...'; btn.classList.add('loading');
-
-  try {
-    // 1. Upload image if selected
-    let imageUrl = '';
-    if (selectedFile) {
-      setUploadStatus('uploading', '⬆ กำลัง upload รูปไป GitHub...');
-      setProgress(30);
-      imageUrl = await uploadImage(selectedFile, date);
-      setProgress(70);
-      setUploadStatus('done', '✓ รูปถูก upload เรียบร้อยแล้ว');
-    }
-
-    setProgress(85);
-
-    // 2. Format time to HH:mm AM/PM
-    const [hh24, mm] = timeRaw.split(':');
-    const h = parseInt(hh24);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12  = h % 12 || 12;
-    const timeFormatted = `${String(h12).padStart(2,'0')}:${mm} ${ampm}`;
-
-    // 3. Build trade object
-    const trade = {
-      id: Date.now().toString(),
-      date, pair, session,
-      time_entry: timeFormatted,
-      result,
-      rr: parseFloat(rr.toFixed(2)),
-      note,
-      image_url: imageUrl,
-      timestamp: new Date().toISOString(),
-    };
-
-    // 4. Append to data.json
+/* SAVE */
+async function saveTrade(){
+  if(!cfg.token||!cfg.repo){toast('⚠ ตั้งค่า GitHub ก่อน','error');openSettings();return;}
+  const pairSel=document.getElementById('f-pair').value;
+  const pair=pairSel==='custom'?document.getElementById('f-pair-custom').value.trim().toUpperCase():pairSel;
+  const date=document.getElementById('f-date').value,session=document.getElementById('f-session').value,
+        timeRaw=document.getElementById('f-time').value,result=document.querySelector('input[name="result"]:checked')?.value,
+        rr=parseFloat(document.getElementById('f-rr').value),note=document.getElementById('f-note').value.trim();
+  if(!date||!pair||!session||!timeRaw||!result||isNaN(rr)){toast('⚠ กรอกให้ครบก่อนนะ','error');return;}
+  const btn=document.getElementById('btn-save');btn.disabled=true;btn.textContent='⏳ Saving...';
+  try{
+    let imageUrl='';
+    if(selFile){setStat('uploading','⬆ กำลัง upload รูป...');setProg(30);const ext=selFile.name.split('.').pop().toLowerCase();const name=`images/img_${date.replace(/-/g,'')}_${Date.now()}.${ext}`;const b64=await toB64(selFile);await ghPut(name,b64,null,`Add chart ${date}`);imageUrl=`https://raw.githubusercontent.com/${cfg.repo}/${cfg.branch}/${name}`;setProg(70);setStat('done','✓ อัปโหลดรูปเสร็จแล้ว');}
+    setProg(85);
+    const[hh24,mm]=timeRaw.split(':');const h=parseInt(hh24);const tf=`${String(h%12||12).padStart(2,'0')}:${mm} ${h>=12?'PM':'AM'}`;
+    const trade={id:Date.now().toString(),date,pair,session,time_entry:tf,result,rr:parseFloat(rr.toFixed(2)),note,image_url:imageUrl,timestamp:new Date().toISOString()};
     trades.unshift(trade);
-    await saveDataJson();
-    setProgress(100);
-
-    toast(`✓ Trade ${pair} ${result} บันทึกแล้ว!`, 'success');
-    resetForm();
-    renderAll();
-    showPage('log');
-
-  } catch(e) {
-    console.error(e);
-    toast(`✕ Error: ${e.message}`, 'error');
-    setUploadStatus('error', `✕ ${e.message}`);
-  } finally {
-    btn.disabled = false; btn.textContent = '⚡ SAVE TRADE'; btn.classList.remove('loading');
-    setTimeout(() => { setProgress(0); document.getElementById('progress-wrap').style.display='none'; }, 1500);
-  }
+    const ex=await ghGet('data.json').catch(()=>null);
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(trades,null,2))));
+    await ghPut('data.json',content,ex?.sha||null,`Update log ${new Date().toISOString()}`);
+    setProg(100);toast(`✓ ${pair} ${result} บันทึกแล้ว!`,'success');resetForm();renderAll();showPage('log');
+  }catch(e){let msg=e.message;if(msg.toLowerCase().includes('failed to fetch'))msg='Failed to fetch — เปิดไฟล์ใน Browser โดยตรง';toast('✕ '+msg,'error');setStat('error','✕ '+msg);}
+  finally{btn.disabled=false;btn.textContent='⚡ SAVE TRADE';setTimeout(()=>{setProg(0);document.getElementById('prog-wrap').style.display='none';},1500);}
 }
 
-async function uploadImage(file, dateStr) {
-  const ext  = file.name.split('.').pop().toLowerCase();
-  const name = `images/img_${dateStr.replace(/-/g,'')}_${Date.now()}.${ext}`;
-  const b64  = await fileToBase64(file);
-  await ghPut(name, b64, null, `Add chart screenshot ${dateStr}`);
-  return `https://raw.githubusercontent.com/${cfg.repo}/${cfg.branch}/${name}`;
+async function deleteTrade(id){
+  if(!confirm('ลบ trade นี้?'))return;trades=trades.filter(t=>t.id!==id);
+  try{const ex=await ghGet('data.json').catch(()=>null);const content=btoa(unescape(encodeURIComponent(JSON.stringify(trades,null,2))));await ghPut('data.json',content,ex?.sha||null,'Delete trade');toast('✓ ลบแล้ว','info');renderAll();}
+  catch(e){toast('✕ '+e.message,'error');}
 }
 
-async function saveDataJson() {
-  const existing = await ghGet('data.json').catch(() => null);
-  const sha      = existing?.sha || null;
-  const content  = btoa(unescape(encodeURIComponent(JSON.stringify(trades, null, 2))));
-  await ghPut('data.json', content, sha, `Update trade log ${new Date().toISOString()}`);
+/* RENDER */
+function renderAll(){renderStats();renderTable();renderGallery();renderPairFilter();}
+function renderStats(){
+  const total=trades.length,wins=trades.filter(t=>t.result==='Win'),losses=trades.filter(t=>t.result==='Loss');
+  const wr=total?((wins.length/total)*100).toFixed(1):'0.0';
+  const avgWin=wins.length?(wins.reduce((a,t)=>a+(t.rr||0),0)/wins.length).toFixed(2):'0.00';
+  const net=trades.reduce((a,t)=>a+(t.rr||0),0);
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-wl').textContent=total?`${wins.length}W · ${losses.length}L`:'—';
+  document.getElementById('s-wr').textContent=wr+'%';
+  document.getElementById('s-wr-sub').textContent=total?`${wins.length} wins from ${total}`:'—';
+  document.getElementById('s-avg').textContent=avgWin+'R';
+  document.getElementById('s-avg-sub').textContent=wins.length?`from ${wins.length} winning trades`:'no wins yet';
+  const netEl=document.getElementById('s-net');
+  netEl.textContent=(net>=0?'+':'')+net.toFixed(2)+'R';
+  netEl.className='scard-val '+(net>0?'sv-green':net<0?'sv-red':'');
+  document.getElementById('s-net-sub').textContent=`${wins.length}W − ${losses.length}L`;
+  const pMap={};trades.forEach(t=>{if(!pMap[t.pair])pMap[t.pair]={w:0,n:0};pMap[t.pair].n++;if(t.result==='Win')pMap[t.pair].w++;});
+  let bp='—',bpwr=-1;Object.entries(pMap).forEach(([p,v])=>{const r=v.w/v.n;if(r>bpwr){bpwr=r;bp=p;}});
+  document.getElementById('s-pair').textContent=bp;document.getElementById('s-pair-sub').textContent=bp!=='—'?`${(bpwr*100).toFixed(0)}% win rate`:'—';
+  const sMap={};trades.forEach(t=>{if(!sMap[t.session])sMap[t.session]={w:0,n:0};sMap[t.session].n++;if(t.result==='Win')sMap[t.session].w++;});
+  let bs='—',bswr=-1;Object.entries(sMap).forEach(([s,v])=>{const r=v.w/v.n;if(r>bswr){bswr=r;bs=s;}});
+  document.getElementById('s-sess').textContent=bs;document.getElementById('s-sess-sub').textContent=bs!=='—'?`${(bswr*100).toFixed(0)}% win rate`:'—';
 }
-
-async function deleteTrade(id) {
-  if (!confirm('ลบ trade นี้?')) return;
-  trades = trades.filter(t => t.id !== id);
-  try {
-    await saveDataJson();
-    toast('✓ ลบแล้ว', 'info');
-    renderAll();
-  } catch(e) {
-    toast(`✕ ${e.message}`, 'error');
-  }
+function renderPairFilter(){const sel=document.getElementById('f-pair-fil'),curr=sel.value,pairs=[...new Set(trades.map(t=>t.pair))].sort();sel.innerHTML='<option value="">All Pairs</option>'+pairs.map(p=>`<option${p===curr?' selected':''}>${p}</option>`).join('');}
+function renderTable(){
+  const res=document.getElementById('f-res')?.value||'',pair=document.getElementById('f-pair-fil')?.value||'',sess=document.getElementById('f-sess-fil')?.value||'';
+  const list=trades.filter(t=>(!res||t.result===res)&&(!pair||t.pair===pair)&&(!sess||t.session===sess));
+  const tbody=document.getElementById('tbody');
+  if(!list.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-msg">[ NO TRADES FOUND ]</div></td></tr>`;return;}
+  tbody.innerHTML=list.map(t=>{
+    const dd=t.date?t.date.split('-').reverse().join('/'):'—';
+    const sc=t.session==='Asian'?'sd-asian':t.session==='London'?'sd-london':'sd-ny';
+    const rrEl=t.rr!=null?`<span class="${t.rr>=0?'rr-pos':'rr-neg'}">${t.rr>=0?'+':''}${t.rr.toFixed(1)}R</span>`:'—';
+    const note=t.note?esc(t.note.slice(0,55))+(t.note.length>55?'…':''):`<span style="color:var(--text-dim)">—</span>`;
+    const img=t.image_url?`<button class="thumb-btn" onclick="openLb('${esc(t.image_url)}')" title="View"><img src="${esc(t.image_url)}" loading="lazy"/></button>`:`<div class="thumb-btn"><span class="thumb-empty">—</span></div>`;
+    return `<tr><td style="font-family:var(--mono);font-size:12px;color:var(--text-mid)">${dd}</td><td><span class="pair-chip">${esc(t.pair)}</span></td><td><span class="sess-badge"><span class="sess-dot ${sc}"></span>${esc(t.session)}</span></td><td style="font-family:var(--mono);font-size:12px;color:var(--text-mid)">${esc(t.time_entry||'')}</td><td><span class="badge badge-${t.result==='Win'?'win':'loss'}">${t.result}</span></td><td>${rrEl}</td><td style="font-size:12px;color:var(--text-mid);max-width:180px">${note}</td><td>${img}</td><td><button class="del-btn" onclick="deleteTrade('${t.id}')">✕</button></td></tr>`;
+  }).join('');
 }
-
-/* ────────────────────────── Render ─────────────────── */
-function renderAll() {
-  renderStats();
-  renderTable();
-  renderGallery();
-  renderPairFilter();
-}
-
-function renderStats() {
-  const total = trades.length;
-  const wins  = trades.filter(t => t.result === 'Win').length;
-  const winrate = total ? ((wins/total)*100).toFixed(1) : '0.0';
-  const avgRR   = total ? (trades.reduce((a,t) => a + (t.rr||0), 0) / total).toFixed(2) : '0.00';
-
-  document.getElementById('s-total').textContent   = total;
-  document.getElementById('s-winrate').textContent = `${winrate}%`;
-  document.getElementById('s-avg-rr').textContent  = avgRR;
-
-  // Best pair by win rate
-  const pairMap = {};
-  trades.forEach(t => {
-    if (!pairMap[t.pair]) pairMap[t.pair] = {wins:0, total:0};
-    pairMap[t.pair].total++;
-    if (t.result === 'Win') pairMap[t.pair].wins++;
-  });
-  let bestPair = '—', bestPairWR = 0;
-  Object.entries(pairMap).forEach(([p,v]) => {
-    const wr = v.total >= 2 ? v.wins/v.total : 0;
-    if (wr > bestPairWR) { bestPairWR = wr; bestPair = p; }
-  });
-  document.getElementById('s-best-pair').textContent = bestPair;
-  document.getElementById('s-best-pair-sub').textContent = bestPair !== '—'
-    ? `${(bestPairWR*100).toFixed(0)}% win rate` : '';
-
-  // Best session
-  const sessMap = {};
-  trades.forEach(t => {
-    if (!sessMap[t.session]) sessMap[t.session] = {wins:0, total:0};
-    sessMap[t.session].total++;
-    if (t.result === 'Win') sessMap[t.session].wins++;
-  });
-  let bestSess = '—', bestSessWR = 0;
-  Object.entries(sessMap).forEach(([s,v]) => {
-    const wr = v.total >= 1 ? v.wins/v.total : 0;
-    if (wr > bestSessWR) { bestSessWR = wr; bestSess = s; }
-  });
-  document.getElementById('s-best-session').textContent = bestSess;
-  document.getElementById('s-best-session-sub').textContent = bestSess !== '—'
-    ? `${(bestSessWR*100).toFixed(0)}% win rate` : '';
-}
-
-function renderPairFilter() {
-  const sel = document.getElementById('filter-pair');
-  const curr = sel.value;
-  const pairs = [...new Set(trades.map(t => t.pair))].sort();
-  sel.innerHTML = '<option value="">All Pairs</option>' +
-    pairs.map(p => `<option value="${p}"${p===curr?' selected':''}>${p}</option>`).join('');
-}
-
-function getFiltered() {
-  const res  = document.getElementById('filter-result')?.value || '';
-  const pair = document.getElementById('filter-pair')?.value   || '';
-  const sess = document.getElementById('filter-session')?.value|| '';
-  return trades.filter(t =>
-    (!res  || t.result  === res) &&
-    (!pair || t.pair    === pair) &&
-    (!sess || t.session === sess)
-  );
-}
-
-function renderTable() {
-  const filtered = getFiltered();
-  const tbody = document.getElementById('trade-tbody');
-  if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">[ NO TRADES FOUND ]</div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = filtered.map(t => {
-    const sessClass = t.session === 'Asian' ? 'asian' : t.session === 'London' ? 'london' : 'newyork';
-    const dateDisp  = t.date ? t.date.split('-').reverse().join('/') : '—';
-    const noteDisp  = t.note ? escHtml(t.note.substring(0,60)) + (t.note.length>60?'…':'') : '<span style="color:var(--text-dim)">—</span>';
-    const imgBtn    = t.image_url
-      ? `<button class="thumb-btn" onclick="openLightbox('${escHtml(t.image_url)}')">
-           <img src="${escHtml(t.image_url)}" alt="chart" loading="lazy" />
-         </button>`
-      : `<div class="thumb-btn no-img">—</div>`;
-    return `<tr>
-      <td style="font-family:var(--mono);font-size:12px;">${dateDisp}</td>
-      <td><span class="pair-chip">${escHtml(t.pair)}</span></td>
-      <td><span class="session-dot ${sessClass}">${escHtml(t.session)}</span></td>
-      <td style="font-family:var(--mono);font-size:12px;color:var(--text-mid);">${escHtml(t.time_entry||'')}</td>
-      <td><span class="badge badge-${t.result==='Win'?'win':'loss'}">${t.result}</span></td>
-      <td><span class="rr-val">${t.rr ? t.rr.toFixed(1)+'R' : '—'}</span></td>
-      <td style="max-width:180px;font-size:12px;color:var(--text-mid);">${noteDisp}</td>
-      <td>${imgBtn}</td>
-      <td><button class="btn-del" onclick="deleteTrade('${t.id}')" title="Delete">✕</button></td>
-    </tr>`;
+function renderGallery(){
+  const res=document.getElementById('g-res')?.value||'';
+  const list=trades.filter(t=>!res||t.result===res);
+  const g=document.getElementById('gallery');
+  if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:64px;color:var(--text-dim);font-family:var(--mono);font-size:12px">[ NO TRADES ]</div>`;return;}
+  g.innerHTML=list.map(t=>{
+    const dd=t.date?t.date.split('-').reverse().join('/'):'—';
+    const img=t.image_url?`<img class="gcard-img" src="${esc(t.image_url)}" loading="lazy"/>`:`<div class="gcard-no-img">📊</div>`;
+    const rrCol=t.rr!=null?(t.rr>=0?'var(--gold)':'var(--red)'):'var(--text-mid)';
+    return `<div class="gcard" onclick="${t.image_url?`openLb('${esc(t.image_url)}')`:''}">
+      ${img}<div class="gcard-body">
+      <div class="gcard-row"><span class="gcard-pair">${esc(t.pair)}</span><span class="badge badge-${t.result==='Win'?'win':'loss'}" style="font-size:10px">${t.result}</span></div>
+      <div class="gcard-row"><span class="gcard-date">${dd} · ${esc(t.session)}</span><span class="gcard-rr" style="color:${rrCol}">${t.rr!=null?(t.rr>=0?'+':'')+t.rr.toFixed(1)+'R':''}</span></div>
+      ${t.note?`<div class="gcard-note">${esc(t.note)}</div>`:''}
+      </div></div>`;
   }).join('');
 }
 
-function renderGallery() {
-  const resF = document.getElementById('g-filter-result')?.value || '';
-  const filtered = trades.filter(t => !resF || t.result === resF);
-  const grid = document.getElementById('gallery-grid');
-  if (!filtered.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-dim);font-family:var(--mono);font-size:12px;">[ NO TRADES ]</div>`;
+/* PAGE NAV */
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const map={log:'Log',add:'Add',gallery:'Gallery'};
+  document.querySelectorAll('.nav-tab').forEach(b=>{if(b.textContent.includes(map[name]))b.classList.add('active');});
+  if(name==='gallery')renderGallery();
+}
+
+/* CALENDAR */
+const CAL_MIN=new Date(2024,0,1);
+let calYear,calMonth,calView='days';
+function calInit(){const t=new Date();calYear=t.getFullYear();calMonth=t.getMonth();setCalDate(null);}
+function toggleCal(e){
+  e.stopPropagation();
+  const p=document.getElementById('cal-popup'),b=document.getElementById('cal-btn');
+  if(p.classList.contains('open')){p.classList.remove('open');b.classList.remove('open');}
+  else{p.classList.add('open');b.classList.add('open');calView='days';drawCal();}
+}
+function closeCal(){document.getElementById('cal-popup').classList.remove('open');document.getElementById('cal-btn').classList.remove('open');}
+function toggleCalView(){calView=calView==='days'?'months':calView==='months'?'years':'days';drawCal();}
+function calNav(dir){
+  if(calView==='days'){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}}
+  else if(calView==='months')calYear+=dir;
+  else calYear+=dir*9;
+  drawCal();
+}
+function drawCal(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const lbl=document.getElementById('cal-lbl'),body=document.getElementById('cal-body');
+  const today=new Date();today.setHours(0,0,0,0);
+  const selV=document.getElementById('f-date').value;
+  const selD=selV?new Date(selV+'T00:00:00'):null;
+  if(calView==='months'){
+    lbl.textContent=calYear;
+    body.innerHTML=`<div class="cal-month-sel">${months.map((m,i)=>`<div class="cal-m${selD&&selD.getFullYear()===calYear&&selD.getMonth()===i?' sel':''}" onclick="pickMonth(${i})">${m}</div>`).join('')}</div>`;
     return;
   }
-  grid.innerHTML = filtered.map(t => {
-    const dateDisp = t.date ? t.date.split('-').reverse().join('/') : '—';
-    const imgEl = t.image_url
-      ? `<img class="gallery-img" src="${escHtml(t.image_url)}" alt="chart" loading="lazy" />`
-      : `<div class="gallery-no-img">📊</div>`;
-    const noteDisp = t.note ? escHtml(t.note) : '';
-    return `<div class="gallery-card" onclick="${t.image_url ? `openLightbox('${escHtml(t.image_url)}')` : ''}">
-      ${imgEl}
-      <div class="gallery-info">
-        <div class="gallery-info-row">
-          <span class="gallery-pair">${escHtml(t.pair)}</span>
-          <span class="badge badge-${t.result==='Win'?'win':'loss'}" style="font-size:10px;">${t.result}</span>
-        </div>
-        <div class="gallery-info-row">
-          <span class="gallery-date">${dateDisp} · ${escHtml(t.session)}</span>
-          <span class="gallery-rr">${t.rr ? t.rr.toFixed(1)+'R' : ''}</span>
-        </div>
-        ${noteDisp ? `<div class="gallery-note">${noteDisp}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  if(calView==='years'){
+    const base=calYear-4;lbl.textContent=`${base} – ${base+8}`;
+    let html='<div class="cal-year-sel">';
+    for(let y=base;y<base+9;y++)html+=`<div class="cal-y${selD&&selD.getFullYear()===y?' sel':''}" onclick="pickYear(${y})">${y}</div>`;
+    body.innerHTML=html+'</div>';return;
+  }
+  lbl.textContent=`${months[calMonth]} ${calYear}`;
+  const first=new Date(calYear,calMonth,1).getDay(),days=new Date(calYear,calMonth+1,0).getDate(),prevD=new Date(calYear,calMonth,0).getDate();
+  let html=`<div class="cal-dow">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<span>${d}</span>`).join('')}</div><div class="cal-days">`;
+  for(let i=0;i<first;i++)html+=`<div class="cal-day other-month">${prevD-first+1+i}</div>`;
+  for(let d=1;d<=days;d++){
+    const dt=new Date(calYear,calMonth,d);
+    const isT=dt.getTime()===today.getTime(),isS=selD&&dt.getTime()===selD.getTime(),isD=dt<CAL_MIN;
+    html+=`<div class="cal-day${isT?' today':''}${isS?' selected':''}${isD?' disabled':''}" onclick="pickDay(${d})">${d}</div>`;
+  }
+  const rem=(7-(first+days)%7)%7;
+  for(let i=1;i<=rem;i++)html+=`<div class="cal-day other-month">${i}</div>`;
+  body.innerHTML=html+'</div>';
+}
+function pickMonth(m){calMonth=m;calView='days';drawCal();}
+function pickYear(y){calYear=y;calView='months';drawCal();}
+function pickDay(d){
+  const dt=new Date(calYear,calMonth,d);if(dt<CAL_MIN)return;
+  const iso=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  setCalDate(iso);closeCal();drawCal();
+}
+function setCalDate(iso){
+  document.getElementById('f-date').value=iso||'';
+  document.getElementById('cal-display').textContent=iso?iso.split('-').reverse().join(' / '):'เลือกวันที่';
 }
 
-/* ────────────────────────── Page Nav ──────────────── */
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById(`page-${name}`).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(b => {
-    if (b.textContent.toLowerCase().includes(name)) b.classList.add('active');
-  });
-  if (name === 'gallery') renderGallery();
+/* FILES */
+function toB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+function toDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);});}
+async function handleFile(e){const f=e.target.files[0];if(!f)return;if(f.size>10*1024*1024){toast('⚠ ไฟล์ใหญ่เกิน 10MB','error');return;}selFile=f;const url=await toDataURL(f);document.getElementById('prev-img').src=url;document.getElementById('prev-wrap').style.display='block';setStat('','');}
+function clearImg(){selFile=null;document.getElementById('f-image').value='';document.getElementById('prev-wrap').style.display='none';document.getElementById('prev-img').src='';setStat('','');}
+function setupDrop(){const z=document.getElementById('drop-zone');z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag')});z.addEventListener('dragleave',()=>z.classList.remove('drag'));z.addEventListener('drop',async e=>{e.preventDefault();z.classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){selFile=f;const u=await toDataURL(f);document.getElementById('prev-img').src=u;document.getElementById('prev-wrap').style.display='block';}});}
+function setupPairCustom(){document.getElementById('f-pair').addEventListener('change',function(){document.getElementById('f-pair-custom').style.display=this.value==='custom'?'block':'none';});}
+function setStat(type,msg){const el=document.getElementById('up-stat');el.className='upload-stat '+type;el.textContent=msg;}
+function setProg(p){const w=document.getElementById('prog-wrap'),b=document.getElementById('prog-bar');if(p>0){w.style.display='block';b.style.width=p+'%';}else b.style.width='0%';}
+function resetForm(){setCalDate(null);calInit();document.getElementById('f-pair').value='NAS100';document.getElementById('f-pair-custom').style.display='none';document.getElementById('f-pair-custom').value='';document.getElementById('f-session').value='New York';document.getElementById('f-rr').value='';document.getElementById('f-note').value='';document.querySelector('input[name="result"][value="Win"]').checked=true;initTime();clearImg();}
+
+/* LIGHTBOX */
+function openLb(url){document.getElementById('lb-img').src=url;document.getElementById('lightbox').classList.add('open');}
+function closeLb(){document.getElementById('lightbox').classList.remove('open');}
+
+/* TOAST */
+function toast(msg,type='info',dur=3500){const c=document.getElementById('toasts'),el=document.createElement('div');el.className='toast '+type;el.textContent=msg;c.appendChild(el);setTimeout(()=>el.remove(),dur);}
+
+/* TEST */
+async function testConn(){
+  const token=document.getElementById('cfg-token').value.trim(),repo=document.getElementById('cfg-repo').value.trim();
+  const el=document.getElementById('test-out');el.style.display='block';
+  const set=(bg,color,bdr,txt)=>{el.style.background=bg;el.style.color=color;el.style.border='1px solid '+bdr;el.textContent=txt;};
+  set('var(--gold-dim)','var(--gold)','rgba(255,209,102,.2)','⏳ กำลังทดสอบ...');
+  if(!token||!repo){set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)','✕ กรุณากรอก Token และ Repo ก่อน');return;}
+  try{if(window.self!==window.top){set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)','⚠ กำลังรันใน Sandbox\n→ Download ไฟล์แล้วเปิดใน Browser โดยตรง');return;}}catch(e){set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)','⚠ Sandboxed — เปิดใน Browser โดยตรง');return;}
+  try{
+    const r=await fetch(`https://api.github.com/repos/${repo}`,{headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}});
+    if(r.status===200){const d=await r.json();set('var(--green-dim)','var(--green)','rgba(5,245,160,.2)',`✓ เชื่อมต่อสำเร็จ!\nRepo: ${d.full_name}\nVisibility: ${d.private?'Private 🔒':'Public 🌐'}`);}
+    else if(r.status===401)set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)','✕ Token ไม่ถูกต้อง (401)');
+    else if(r.status===404)set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)',`✕ ไม่พบ Repo (404): "${repo}"`);
+    else set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)',`✕ HTTP ${r.status}`);
+  }catch(e){set('var(--red-dim)','var(--red)','rgba(255,76,110,.2)',e.message.includes('fetch')?'✕ Failed to fetch → เปิดไฟล์ใน Browser โดยตรง':'✕ '+e.message);}
 }
 
-/* ────────────────────────── File / Upload ─────────── */
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload  = e => res(e.target.result.split(',')[1]);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-}
-
-function fileToDataURL(file) {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload  = e => res(e.target.result);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (file.size > 10 * 1024 * 1024) { toast('⚠ ไฟล์ใหญ่เกิน 10MB', 'error'); return; }
-  selectedFile = file;
-  const dataUrl = await fileToDataURL(file);
-  document.getElementById('upload-preview-img').src = dataUrl;
-  document.getElementById('upload-preview-wrap').style.display = 'block';
-  setUploadStatus('', '');
-}
-
-function clearImage() {
-  selectedFile = null;
-  uploadedImageUrl = '';
-  document.getElementById('f-image').value = '';
-  document.getElementById('upload-preview-wrap').style.display = 'none';
-  document.getElementById('upload-preview-img').src = '';
-  setUploadStatus('', '');
-}
-
-function setupDragDrop() {
-  const zone = document.getElementById('drop-zone');
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-  zone.addEventListener('drop', async e => {
-    e.preventDefault(); zone.classList.remove('drag');
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      selectedFile = file;
-      const dataUrl = await fileToDataURL(file);
-      document.getElementById('upload-preview-img').src = dataUrl;
-      document.getElementById('upload-preview-wrap').style.display = 'block';
-    }
-  });
-}
-
-function setUploadStatus(type, msg) {
-  const el = document.getElementById('upload-status');
-  el.className = `upload-status ${type}`;
-  el.textContent = msg;
-}
-
-function setProgress(pct) {
-  const wrap = document.getElementById('progress-wrap');
-  const bar  = document.getElementById('progress-bar');
-  if (pct > 0) { wrap.style.display = 'block'; bar.style.width = pct + '%'; }
-  else { bar.style.width = '0%'; }
-}
-
-function setupPairCustom() {
-  document.getElementById('f-pair').addEventListener('change', function() {
-    document.getElementById('f-pair-custom').style.display = this.value === 'custom' ? 'block' : 'none';
-  });
-}
-
-function resetForm() {
-  setTodayDate();
-  document.getElementById('f-pair').value = 'NAS100';
-  document.getElementById('f-pair-custom').style.display = 'none';
-  document.getElementById('f-pair-custom').value = '';
-  document.getElementById('f-session').value = 'New York';
-  document.getElementById('f-rr').value = '';
-  document.getElementById('f-note').value = '';
-  document.querySelector('input[name="result"][value="Win"]').checked = true;
-  clearImage();
-}
-
-/* ────────────────────────── Lightbox ───────────────── */
-function openLightbox(url) {
-  document.getElementById('lightbox-img').src = url;
-  document.getElementById('lightbox').classList.add('open');
-}
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-
-/* ────────────────────────── Toast ──────────────────── */
-function toast(msg, type = 'info', duration = 3500) {
-  const c = document.getElementById('toast-container');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  c.appendChild(el);
-  setTimeout(() => el.remove(), duration);
-}
-
-/* ────────────────────────── Utils ──────────────────── */
-function escHtml(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 </script>
 </body>
 </html>
