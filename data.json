@@ -1,5 +1,18 @@
 [
   {
+    "id": "1776145804684",
+    "date": "2025-10-10",
+    "pair": "NAS100",
+    "session": "London",
+    "time_entry": "03:02 AM",
+    "result": "Breakeven",
+    "rr": 0,
+    "pnl": 3.59,
+    "note": "",
+    "image_url": "https://raw.githubusercontent.com/LouisFriendis/my-backtest-data/main/images/img_20251010_1776145802040.png",
+    "timestamp": "2026-04-14T05:50:04.684Z"
+  },
+  {
     "id": "1776145169332",
     "date": "2025-10-09",
     "pair": "NAS100",
